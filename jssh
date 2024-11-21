@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Запрос данных с клавиатуры
+echo "Введите путь к каталогу:"
+read directory
+
+echo "Введите минимальный размер файла в байтах:"
+read min_size
+
+echo "Введите максимальный размер файла в байтах:"
+read max_size
+
+# Проверка существования каталога
+if [ ! -d "$directory" ]; then
+    echo "Каталог '$directory' не существует."
+    exit 1
+fi
+
+# Переменная для подсчета файлов
+file_count=0
+
+# Цикл для обработки файлов
+for file in "$directory"/*; do
+    # Проверка, является ли файл обычным файлом
+    if [ -f "$file" ]; then
+        # Получение размера файла
+        file_size=$(stat -c%s "$file")
+        
+        # Проверка, попадает ли размер файла в указанный диапазон
+        if [ "$file_size" -ge "$min_size" ] && [ "$file_size" -le "$max_size" ]; then
+            # Увеличение счетчика файлов
+            file_count=$((file_count + 1))
+            
+            # Вычисление контрольной суммы
+            checksum=$(cksum "$file" | awk '{print $1}')
+            
+            # Вывод сообщения
+            echo "Контрольная сумма $file_count-го файла равна $checksum"
+        fi
+    fi
+done
+
+# Проверка, были ли найдены файлы
+if [ "$file_count" -eq 0 ]; then
+    echo "Файлы размером от $min_size до $max_size байт не найдены в каталоге '$directory'."
+fi
