@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Проверка наличия аргументов
+if [ "$#" -ne 2 ]; then
+    echo "Использование: $0 <начальный PID> <конечный PID>"
+    exit 1
+fi
+
+# Присваивание аргументов переменным
+start_pid=$1
+end_pid=$2
+
+# Проверка корректности диапазона PID
+if ! [[ "$start_pid" =~ ^[0-9]+$ ]] || ! [[ "$end_pid" =~ ^[0-9]+$ ]] || [ "$start_pid" -gt "$end_pid" ]; then
+    echo "Некорректный диапазон PID. Убедитесь, что начальный PID меньше или равен конечному PID."
+    exit 1
+fi
+
+# Цикл по диапазону PID
+for pid in $(seq $start_pid $end_pid); do
+    # Получение информации о процессе
+    process_info=$(ps -p $pid -o comm=,state=,nlwp=,pid=,ppid= --no-headers)
+
+    # Проверка, существует ли процесс с данным PID
+    if [ -n "$process_info" ]; then
+        # Разделение информации на переменные
+        read -r command state threads pid ppid <<< "$process_info"
+
+        # Создание имени файла
+        filename="process_info_${pid}.txt"
+
+        # Запись информации в файл
+        echo "Название: $command" > "$filename"
+        echo "Состояние: $state" >> "$filename"
+        echo "Количество потоков: $threads" >> "$filename"
+        echo "Номер процесса: $pid" >> "$filename"
+        echo "Идентификатор родительского процесса: $ppid" >> "$filename"
+    fi
+done
