@@ -1,11 +1,11 @@
-start_pid=$1
-end_pid=$2
+start=$1
+end=$2
 
-if [ "$start_pid" -gt "$end_pid" ]; then # проверка корректности диапазона PID
+if [ "$start" -gt "$end" ]; then # проверка корректности диапазона PID
     echo "Ошибка: начальный PID должен быть меньше или равен конечному PID."
 fi
 
-for pid in $(seq $start_pid $end_pid); do # перебор всех PID в заданном диапазоне
+for pid in $(seq $start $end); do # перебор всех PID в заданном диапазоне
     # получение информации о процессе с помощью команды ps
     process_info=$(ps -p $pid -o comm=,state=,nlwp=,pid=,ppid=)
 
